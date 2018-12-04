@@ -67,9 +67,9 @@ def search_database(pattern,sqlite_file):
 def draft_search(pattern):
     for folder in [wks_path, jxz_path]:
         for file in os.listdir(folder):
-            m=re.search(pattern, file)
+            m=re.search('\d\d' + pattern, file)
             if m:
-                if m[0] != '.': 
+                if file[0] != '.': 
                     return os.path.join(folder,file)
 
 def check_digit():
