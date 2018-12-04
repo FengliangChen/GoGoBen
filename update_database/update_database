@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#date 20181106
+#Update the database.
+
+connection_detect(){
+cd /Volumes/datavolumn_bmkserver_Pub/ 2> /dev/null 
+if ! [ $(pwd) == "/Volumes/datavolumn_bmkserver_Pub" ]; then
+	echo -e "请确认服务器pub是否连接！"
+	exit 0
+fi 
+}
+
+connection_detect
+
+file=$HOME/Documents/build/new_scan
+start_time=`date +%s`
+cd ${file} && python database_storage.py && cp search.db /Volumes/datavolumn_bmkserver_Pub/新做稿/已结束/NON-WMT/.database/search.db
+echo "更新耗时$(expr `date +%s` - $start_time)秒。"
+exit 0
