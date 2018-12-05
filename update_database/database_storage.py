@@ -42,6 +42,7 @@ while True:
 		insert_job(all_jobs[0][a],all_jobs[1][a])
 	except IndexError:
 		print("数据库更新完成。")
+        print("共收集{}个单号".format(a))
 		break
 	a = a + 1
 
