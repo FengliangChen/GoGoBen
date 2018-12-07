@@ -12,6 +12,8 @@
 import os
 from configparser import ConfigParser
 
+HOME = os.path.expanduser('~')
+
 class Scanfolder:
     def __init__(self,folder_lev1, ca_us_lev2):
         self.folder_lev1 = folder_lev1
@@ -123,7 +125,7 @@ class Scan_LNC_folder:
 
 def all_the_jobs():
     cfg = ConfigParser()
-    cfg.read('config.ini')
+    cfg.read(HOME + '/Documents/GoGoConfig/config.ini')
     a = Scanfolder(cfg.get('us_ca','us_main'),cfg.get('us_ca','ca_us_lev2').split(','))
     b = Scanfolder(cfg.get('us_ca','ca_main'),cfg.get('us_ca','ca_us_lev2').split(','))
     c = Scan_other_folder(cfg.get('other','other_main'),cfg.get('other','other_lev2').split(','))

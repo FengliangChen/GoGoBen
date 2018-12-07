@@ -17,7 +17,7 @@ from configparser import ConfigParser
 
 HOME = os.path.expanduser('~')
 cfg = ConfigParser()
-cfg.read('config.ini')
+cfg.read(HOME + '/Documents/GoGoConfig/config.ini')
 sqlite_file = HOME + cfg.get('db_path','db')    # name of the sqlite database file
 
 print('数据库更新中')
@@ -77,5 +77,6 @@ while True:
 
 conn.commit()
 conn.close()
-exit()
+
+sys.exit()
 # if __name__ == "__main__":
