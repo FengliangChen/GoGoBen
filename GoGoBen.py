@@ -100,15 +100,36 @@ def go(event=None):
         else:
             tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
 
+def select_all(event):
+    event.widget.select_range(0, 'end')
+    event.widget.icursor('end')
+
+def convert_case(event):
+    k = entry_text.get().upper()
+    if len(k) == 6:
+        entry_text.set(k[2:])
+    elif len(k) == 4:
+        year = datetime.date.today().strftime('%Y')
+        entry_text.set(year[2:]+k)
+        event.widget.icursor(2)
+        return "break"
+    else:
+        pattern = '[\d]{4}[0-9A-Z]{2}'
+        m = re.search(pattern, k)
+        if m:
+            entry_text.set(m.group(0))
+    event.widget.icursor('end')
+    return "break"
+
 def about_gogoben():
-    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n\n       GoGoBen version 1.0.1')
+    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n       GoGoBen version 1.0.3\n\n     TM and © 2018-2019 SMC Tech. \n           All Rights Reserved.')
 
 def help_gogoben():
     tk.messagebox.showinfo(title="帮助", message='输入单号的六位打开design文件夹，输入单号的后四位（即省去年份）可打开“新做稿“或”进行中“的文件夹。')
        
 def run():
     root = tk.Tk()
-    root.title('Go Go Ben')
+    root.title('GoGoBen')
     root.resizable(0,0)
     menu_bar = tk.Menu(root)
     about_menu = tk.Menu(menu_bar, tearoff=0)
@@ -130,6 +151,9 @@ def run():
     tk.Button(root, text="Go", command = go).grid(row=2, column=1, sticky='e')
     root.bind("<Return>", go)
     root.bind("<KP_Enter>", go)
+    entry.bind("<Command-a>", select_all)
+    entry.bind("<Command-A>", select_all)
+    entry.bind("<Tab>", convert_case)
     root.mainloop()
 
 
