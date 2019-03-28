@@ -14,6 +14,7 @@ import datetime
 import re
 import subprocess
 import sqlite3
+import sys
 import tkinter as tk
 import tkinter.messagebox
 
@@ -37,7 +38,6 @@ def check_server():
     	subprocess.call(["cp", path1, path2])
     if not ist3:
         tk.messagebox.showwarning(title="警告", message= '请检查服务器design是否已连接。')
-        exit()
 
 def compare_db_time():
     try:
@@ -97,6 +97,15 @@ def go(event=None):
         path = search_database(str(k),path2)
         if path:
             subprocess.call(["open", path[0][1]])
+            folder_name = path[0][0]
+            desk_path = os.path.join(HOME, "Desktop")
+            desk_folder_path = os.path.join(desk_path, folder_name)
+            if CheckVar1.get() == 1:
+                if os.path.isdir(desk_folder_path):
+                    pass
+                    # tk.messagebox.showwarning(title="桌面", message= folder_name + '已存在于桌面')
+                else:
+                    os.makedirs(desk_folder_path)
         else:
             tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
 
@@ -121,8 +130,26 @@ def convert_case(event):
     event.widget.icursor('end')
     return "break"
 
+def paste(event):
+    try:
+        event.widget.delete("sel.first", "sel.last")
+    except:
+        pass
+    event.widget.insert("insert", event.widget.clipboard_get())
+    return "break"
+
+def copy(event):
+    try:
+        copy_text = event.widget.selection_get()
+        event.widget.clipboard_clear()
+        event.widget.clipboard_append(copy_text)
+    except:
+        sys.stdout.write('\a')
+        sys.stdout.flush()
+    return "break"
+
 def about_gogoben():
-    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n       GoGoBen version 1.0.3\n\n     TM and © 2018-2019 SMC Tech. \n           All Rights Reserved.')
+    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n       GoGoBen version 1.0.5\n\n     TM and © 2018-2019 SMC Tech. \n           All Rights Reserved.')
 
 def help_gogoben():
     tk.messagebox.showinfo(title="帮助", message='输入单号的六位打开design文件夹，输入单号的后四位（即省去年份）可打开“新做稿“或”进行中“的文件夹。')
@@ -139,9 +166,11 @@ def run():
     root.config(menu=menu_bar)
     global label_text
     global entry_text
+    global CheckVar1
     label_text = tk.StringVar()
     entry_text = tk.StringVar()
-    tk.Label(root, text ="   Job:" ).grid(row = 0, column=0, sticky = 'w')
+    CheckVar1 = tk.IntVar()
+    tk.Label(root, text ="      Job:" ).grid(row = 0, column=0, sticky = 'w')
     tk.Label(root,textvariable = label_text, width = 20, foreground="steelblue").grid(row = 1, column=1, sticky = 'w')
     tk.Label(root).grid(row = 1, column=0,sticky = 'w')
     entry = tk.Entry(root, width=20, textvariable = entry_text)
@@ -149,11 +178,14 @@ def run():
     entry.grid(row = 0, column=1, sticky = 'w')
     tk.Button(root, text="Quit", command = root.quit).grid(row=2, column=0, sticky='w')
     tk.Button(root, text="Go", command = go).grid(row=2, column=1, sticky='e')
+    tk.Checkbutton(root, text = "Folder", variable = CheckVar1, onvalue = 1, offvalue = 0, height=1, width = 7).grid(row=1, column=0, sticky='w')
     root.bind("<Return>", go)
     root.bind("<KP_Enter>", go)
     entry.bind("<Command-a>", select_all)
     entry.bind("<Command-A>", select_all)
     entry.bind("<Tab>", convert_case)
+    root.bind("<Command-V>", paste)
+    root.bind("<Command-C>", copy)
     root.mainloop()
 
 
