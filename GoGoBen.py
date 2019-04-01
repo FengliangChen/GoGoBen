@@ -96,16 +96,19 @@ def go(event=None):
     if k:
         path = search_database(str(k),path2)
         if path:
-            subprocess.call(["open", path[0][1]])
-            folder_name = path[0][0]
-            desk_path = os.path.join(HOME, "Desktop")
-            desk_folder_path = os.path.join(desk_path, folder_name)
-            if CheckVar1.get() == 1:
-                if os.path.isdir(desk_folder_path):
-                    pass
-                    # tk.messagebox.showwarning(title="桌面", message= folder_name + '已存在于桌面')
-                else:
-                    os.makedirs(desk_folder_path)
+            if os.path.exists(path[0][1]):
+                subprocess.call(["open", path[0][1]])
+                folder_name = path[0][0]
+                desk_path = os.path.join(HOME, "Desktop")
+                desk_folder_path = os.path.join(desk_path, folder_name)
+                if CheckVar1.get() == 1:
+                    if os.path.isdir(desk_folder_path):
+                        pass
+                        # tk.messagebox.showwarning(title="桌面", message= folder_name + '已存在于桌面')
+                    else:
+                        os.makedirs(desk_folder_path)
+            else:
+                tk.messagebox.showwarning(title="数据更新", message= '需要进行数据更新。')
         else:
             tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
 
