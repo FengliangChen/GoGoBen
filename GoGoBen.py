@@ -32,29 +32,32 @@ def check_server():
     ist1 = os.path.exists(path1)
     ist2 = os.path.exists(path2)
     ist3 = os.path.exists(path3)
-    if not ist1:
-        tk.messagebox.showinfo(title="注意", message= '请检查服务器pub是否已连接。')
+    if len(entry_text.get()) == 4:
+        if not ist1:
+            tk.messagebox.showinfo(title="注意", message= '请检查服务器pub是否已连接。')
     if not ist2:
     	subprocess.call(["cp", path1, path2])
-    if not ist3:
-        tk.messagebox.showwarning(title="警告", message= '请检查服务器design是否已连接。')
+    if len(entry_text.get()) == 6:
+        if not ist3:
+            tk.messagebox.showwarning(title="警告", message= '请检查服务器design是否已连接。')
 
 def compare_db_time():
-    try:
-        with open(log_path,'r') as f:
-            f = str(f.read())
-            file1_mtime = os.path.getmtime(path1)
-            if f != str(file1_mtime):
-                subprocess.call(['cp', path1, path2])
-                ct1 = datetime.datetime.fromtimestamp(file1_mtime)
-                with open(log_path,'w') as f:
-                    file1_mtime = os.path.getmtime(path1)
-                    f.write(str(file1_mtime))
-                return "采集于{}".format(ct1)
-    except FileNotFoundError:
-        with open(log_path,'w') as f:
-            file1_mtime = os.path.getmtime(path1)
-            f.write(str(file1_mtime))
+    if os.path.exists(path1):
+        try:
+            with open(log_path,'r') as f:
+                f = str(f.read())
+                file1_mtime = os.path.getmtime(path1)
+                if f != str(file1_mtime):
+                    subprocess.call(['cp', path1, path2])
+                    ct1 = datetime.datetime.fromtimestamp(file1_mtime)
+                    with open(log_path,'w') as f:
+                        file1_mtime = os.path.getmtime(path1)
+                        f.write(str(file1_mtime))
+                    return "采集于{}".format(ct1)
+        except FileNotFoundError:
+            with open(log_path,'w') as f:
+                file1_mtime = os.path.getmtime(path1)
+                f.write(str(file1_mtime))
 
 def search_database(pattern,sqlite_file):
     conn = sqlite3.connect(sqlite_file)
@@ -78,11 +81,12 @@ def check_digit():
     if len(k) == 6:
         return k
     if len(k) == 4:
-        result = draft_search(k)
-        if result:
-            subprocess.call(["open", draft_search(k)])
-        else:
-            tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
+        if os.path.exists(path1):
+            result = draft_search(k)
+            if result:
+                subprocess.call(["open", draft_search(k)])
+            else:
+                tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
     else:
         tk.messagebox.showwarning(title="输入错误", message= '请输入四或六位数')
         return False
@@ -108,7 +112,8 @@ def go(event=None):
                     else:
                         os.makedirs(desk_folder_path)
             else:
-                tk.messagebox.showwarning(title="数据更新", message= '需要进行数据更新。')
+                if os.path.exists(path3):
+                    tk.messagebox.showwarning(title="数据更新", message= '需要进行数据更新。')
         else:
             tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
 
@@ -152,7 +157,7 @@ def copy(event):
     return "break"
 
 def about_gogoben():
-    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n       GoGoBen version 1.0.5\n\n     TM and © 2018-2019 SMC Tech. \n           All Rights Reserved.')
+    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n       GoGoBen version 1.0.6\n\n     TM and © 2018-2019 SMC Tech. \n           All Rights Reserved.')
 
 def help_gogoben():
     tk.messagebox.showinfo(title="帮助", message='输入单号的六位打开design文件夹，输入单号的后四位（即省去年份）可打开“新做稿“或”进行中“的文件夹。')
