@@ -123,6 +123,43 @@ class Scan_LNC_folder:
                     jobs_path.append(self.folder_lev3_True[a]+'/'+f)
         return jobs_path
 
+class Scan_HOL_folder:
+    def __init__(self,folder_lev1):
+        self.folder_lev1 = folder_lev1
+        self.folder_lev2 = ['archive','running']
+        self.folder_lev3 = []
+        self.job_folder = []
+        self.folder_lev3_True = []
+
+    def ls_lev3(self):
+        for f2 in self.folder_lev2:
+            f2path = os.path.join(self.folder_lev1,f2)
+            if os.path.isdir(f2path):
+                dirs = os.listdir(f2path)
+                for file in dirs:
+                    next_path = os.path.join(f2path,file)
+                    if os.path.isdir(next_path):
+                        self.folder_lev3.append(next_path)
+
+    def ls_lev4(self):
+        self.ls_lev3()
+        for f3 in self.folder_lev3:
+            if os.path.isdir(f3):
+                self.job_folder.append(os.listdir(f3))
+                self.folder_lev3_True.append(f3)
+
+    def path_combine(self):
+        self.ls_lev4()
+        jobs_path = []
+        length = len(self.folder_lev3_True)
+        for a in range(length):
+            for f in self.job_folder[a]:
+                if f[0] == '.':
+                    pass
+                else:
+                    jobs_path.append(self.folder_lev3_True[a]+'/'+f)
+        return jobs_path
+
 def all_the_jobs():
     cfg = ConfigParser()
     cfg.read(HOME + '/Documents/GoGoConfig/config.ini')
@@ -130,11 +167,13 @@ def all_the_jobs():
     b = Scanfolder(cfg.get('us_ca','ca_main'),cfg.get('us_ca','ca_us_lev2').split(','))
     c = Scan_other_folder(cfg.get('other','other_main'),cfg.get('other','other_lev2').split(','))
     d = Scan_LNC_folder(cfg.get('lnc','lnc_main'))
+    e = Scan_HOL_folder(cfg.get('hol','hol_main'))
     all_jobs = []
     all_jobs.extend(a.path_combine())
     all_jobs.extend(b.path_combine())
     all_jobs.extend(c.path_combine())
     all_jobs.extend(d.path_combine())
+    all_jobs.extend(e.path_combine())
     return all_jobs
 
 def haha():
