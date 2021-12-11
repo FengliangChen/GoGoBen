@@ -21,25 +21,35 @@ import tkinter.messagebox
 HOME = os.path.expanduser('~')
 path1 = '/Volumes/datavolumn_bmkserver_Pub/新做稿/已结束/NON-WMT/.database/search.db'
 path2 = HOME+'/Documents/.GoGoBen/search.db'
-path3 = "/Volumes/datavolumn_bmkserver_Design/WMT-USA"
+path_pf_remote = '/Volumes/datavolumn_bmkserver_Pub/新做稿/已结束/NON-WMT/.database/search_pf.db'
+path_pf_local = HOME+'/Documents/.GoGoBen/search_pf.db'
+path3 = "/Volumes/datavolumn_bmkserver_Design"
+pub_path = "/Volumes/datavolumn_bmkserver_Pub"
+
 log_path = HOME+'/Documents/.GoGoBen/log'
+pf_log_path = HOME+'/Documents/.GoGoBen/pf_log'
 
 wks_path = "/Volumes/datavolumn_bmkserver_Pub/新做稿/未开始"
 jxz_path = "/Volumes/datavolumn_bmkserver_Pub/新做稿/进行中"
 
 
 def check_server():
-    ist1 = os.path.exists(path1)
+    pub_exist = os.path.exists(pub_path)
     ist2 = os.path.exists(path2)
     ist3 = os.path.exists(path3)
+    local_pf_db_exist = os.path.exists(path_pf_local)
     if len(entry_text.get()) == 4:
-        if not ist1:
+        if not pub_exist:
             tk.messagebox.showinfo(title="注意", message= '请检查服务器pub是否已连接。')
     if not ist2:
     	subprocess.call(["cp", path1, path2])
+    if not local_pf_db_exist:
+        subprocess.call(["cp", path_pf_remote, path_pf_local])
     if len(entry_text.get()) == 6:
-        if not ist3:
+        if not ist3 and CheckVarPF.get() == 0:
             tk.messagebox.showwarning(title="警告", message= '请检查服务器design是否已连接。')
+        if not pub_exist and CheckVarPF.get() == 1:
+            tk.messagebox.showwarning(title="警告", message= '请检查服务器pub是否已连接。')
 
 def compare_db_time():
     if os.path.exists(path1):
@@ -58,6 +68,25 @@ def compare_db_time():
             with open(log_path,'w') as f:
                 file1_mtime = os.path.getmtime(path1)
                 f.write(str(file1_mtime))
+
+def compare_db_pf_time():
+        if os.path.exists(path_pf_remote):        
+            try:
+                with open(pf_log_path,'r') as f:
+                    f = str(f.read())
+                    file1_mtime = os.path.getmtime(path_pf_remote)
+                    if f != str(file1_mtime):
+                        subprocess.call(['cp', path_pf_remote, path_pf_local])
+                        ct1 = datetime.datetime.fromtimestamp(file1_mtime)
+                        with open(pf_log_path,'w') as f:
+                            file1_mtime = os.path.getmtime(path_pf_remote)
+                            f.write(str(file1_mtime))
+                        return "采集于{}".format(ct1)
+            except FileNotFoundError:
+                with open(pf_log_path,'w') as f:
+                    file1_mtime = os.path.getmtime(path_pf_remote)
+                    f.write(str(file1_mtime))
+
 
 def search_database(pattern,sqlite_file):
     conn = sqlite3.connect(sqlite_file)
@@ -96,16 +125,22 @@ def go(event=None):
     db_time_result = compare_db_time()
     if db_time_result:
         label_text.set(db_time_result)
+    pf_db_time_result = compare_db_pf_time()
+    if pf_db_time_result:
+        label_pf_text.set(pf_db_time_result)
     k = check_digit()
     if k:
-        path = search_database(str(k),path2)
+        if CheckVarPF.get() == 1:
+            path = search_database(str(k),path_pf_local)
+        else:
+            path = search_database(str(k),path2)
         if path:
             if os.path.exists(path[0][1]):
                 subprocess.call(["open", path[0][1]])
                 folder_name = path[0][0]
                 desk_path = os.path.join(HOME, "Desktop")
                 desk_folder_path = os.path.join(desk_path, folder_name)
-                if CheckVar1.get() == 1:
+                if CheckVar1.get() == 1 and CheckVarPF.get() == 0:
                     if os.path.isdir(desk_folder_path):
                         pass
                         # tk.messagebox.showwarning(title="桌面", message= folder_name + '已存在于桌面')
@@ -116,6 +151,24 @@ def go(event=None):
                     tk.messagebox.showwarning(title="数据更新", message= '需要进行数据更新。')
         else:
             tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
+
+def pf_hotkey(event):
+    check_server()
+    pf_db_time_result = compare_db_pf_time()
+    if pf_db_time_result:
+        label_pf_text.set(pf_db_time_result)
+    k = check_digit()
+    if k:
+        path = search_database(str(k),path_pf_local)
+        if path:
+            if os.path.exists(path[0][1]):
+                subprocess.call(["open", path[0][1]])
+            else:
+                if os.path.exists(pub_path):
+                    tk.messagebox.showwarning(title="数据更新", message= '需要进行数据更新。')
+        else:
+            tk.messagebox.showwarning(title="找不到", message= '我怎么都找不到，你自己打开吧。')
+
 
 def select_all(event):
     event.widget.select_range(0, 'end')
@@ -157,7 +210,7 @@ def copy(event):
     return "break"
 
 def about_gogoben():
-    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n       GoGoBen version 1.0.6\n\n     TM and © 2018-2019 SMC Tech. \n           All Rights Reserved.')
+    tk.messagebox.showinfo(title="关于GoGoBen", message= 'GoGoBen由Simon Chen 开发及维护。\n      联系：bafelem@gmail.com \n\n       GoGoBen version 1.0.7\n\n     TM and © 2018-2019 SMC Tech. \n           All Rights Reserved.')
 
 def help_gogoben():
     tk.messagebox.showinfo(title="帮助", message='输入单号的六位打开design文件夹，输入单号的后四位（即省去年份）可打开“新做稿“或”进行中“的文件夹。')
@@ -173,20 +226,26 @@ def run():
     menu_bar.add_cascade(label='关于', menu=about_menu)
     root.config(menu=menu_bar)
     global label_text
+    global label_pf_text
     global entry_text
     global CheckVar1
+    global CheckVarPF
     label_text = tk.StringVar()
+    label_pf_text = tk.StringVar()
     entry_text = tk.StringVar()
     CheckVar1 = tk.IntVar()
+    CheckVarPF = tk.IntVar()
     tk.Label(root, text ="      Job:" ).grid(row = 0, column=0, sticky = 'w')
     tk.Label(root,textvariable = label_text, width = 20, foreground="steelblue").grid(row = 1, column=1, sticky = 'w')
+    tk.Label(root,textvariable = label_pf_text, width = 20, foreground="steelblue").grid(row = 2, column=1, sticky = 'w')
     tk.Label(root).grid(row = 1, column=0,sticky = 'w')
     entry = tk.Entry(root, width=20, textvariable = entry_text)
     entry.focus()
     entry.grid(row = 0, column=1, sticky = 'w')
-    tk.Button(root, text="Quit", command = root.quit).grid(row=2, column=0, sticky='w')
-    tk.Button(root, text="Go", command = go).grid(row=2, column=1, sticky='e')
+    tk.Button(root, text="Quit", command = root.quit).grid(row=3, column=0, sticky='w')
+    tk.Button(root, text="Go", command = go).grid(row=3, column=1, sticky='e')
     tk.Checkbutton(root, text = "Folder", variable = CheckVar1, onvalue = 1, offvalue = 0, height=1, width = 7).grid(row=1, column=0, sticky='w')
+    tk.Checkbutton(root, text = "PF", variable = CheckVarPF, onvalue = 1, offvalue = 0, height=1, width = 7).grid(row=2, column=0, sticky='w')
     root.bind("<Return>", go)
     root.bind("<KP_Enter>", go)
     entry.bind("<Command-a>", select_all)
@@ -194,6 +253,8 @@ def run():
     entry.bind("<Tab>", convert_case)
     root.bind("<Command-V>", paste)
     root.bind("<Command-C>", copy)
+    root.bind("<Command-e>", pf_hotkey)
+    root.bind("<Command-E>", pf_hotkey)
     root.mainloop()
 
 
